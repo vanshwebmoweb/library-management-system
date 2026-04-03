@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.py[cod]
+
+# Virtual Environment
+env/
+venv/
+.env
+
+# Database
+db.sqlite3
+
+# Django
+*.log
+local_settings.py
+
+# VS Code
+.vscode/
+
+# Windows
+Thumbs.db
+Desktop.ini
