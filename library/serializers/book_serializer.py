@@ -8,15 +8,20 @@ class BookSerializer(serializers.ModelSerializer):
     author_name = serializers.CharField(source='author.name', read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
     is_available = serializers.SerializerMethodField()
+    days_since_published = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
-        fields = ('id', 'title', 'author', 'author_name', 'category', 'category_name', 'isbn', 'published_date', 'is_available',)
+        fields = ('id', 'title', 'author', 'author_name', 'category', 'category_name', 'isbn', 'published_date', 'is_available', 'days_since_published',)
 
     def get_is_available(self, obj):
         if obj.copies_available > 0:
             return "Yes"
         return "No"
+
+    def get_days_since_published(self, obj):
+        delta = timezone.now().date() - obj.published_date
+        return delta.days
 
     def validate(self, data):
         title = data.get('title')

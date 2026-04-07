@@ -5,10 +5,11 @@ from library.models import Author
 
 class AuthorSerializer(serializers.ModelSerializer):
     books = serializers.StringRelatedField(many=True, read_only=True)
+    total_books = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Author
-        fields = ('id', 'name', 'bio', 'books',)
+        fields = ('id', 'name', 'bio', 'books', 'total_books',)
 
     def validate(self, data):
         name = data.get('name')
