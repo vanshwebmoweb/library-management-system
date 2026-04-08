@@ -5,6 +5,9 @@ from rest_framework.pagination import PageNumberPagination
 from library.models import Category
 from library.serializers import CategorySerializer
 from library.permissions import IsAdminOrReadOnly
+from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
+from library.filters import CategoryFilter
 
 
 
@@ -19,13 +22,29 @@ class CategoryBaseAPIView(APIView):
 
 
 class CategoryListAPIView(CategoryBaseAPIView):
+    filterset_class = CategoryFilter
+    search_fields = ('name',)
+    ordering_fields = ('name', 'id',)
+    ordering = ('name',)
+
     def get(self, request):
         categories = Category.objects.all()
+        filter_backend = DjangoFilterBackend()
+        categories = filter_backend.filter_queryset(request,categories,self,)
+
+
+        search_backend = SearchFilter()
+        categories = search_backend.filter_queryset(request,categories,self,)
+
+        ordering_backend = OrderingFilter()
+        categories = ordering_backend.filter_queryset(request,categories,self,)
+
         paginator = PageNumberPagination()
         paginator.page_size = 2
         result_page = paginator.paginate_queryset(categories, request)
         serializer = CategorySerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
+
 
 
 class CategoryCreateAPIView(CategoryBaseAPIView):

@@ -1,13 +1,5 @@
 import django_filters
-from .models import Author, Book, BorrowRecord
-
-
-class AuthorFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(field_name='name',lookup_expr='icontains',label='Author name contains')
-
-    class Meta:
-        model = Author
-        fields = ('name',)
+from library.models import Book
 
 
 class BookFilter(django_filters.FilterSet):
@@ -27,14 +19,3 @@ class BookFilter(django_filters.FilterSet):
     class Meta:
         model = Book
         fields = ('author_name', 'category_name', 'title', 'is_available',)
-
-
-class BorrowFilter(django_filters.FilterSet):
-    status = django_filters.ChoiceFilter(
-        choices=[('borrowed', 'Borrowed'),('returned', 'Returned'),])
-
-    book_name = django_filters.CharFilter(field_name='book__title',lookup_expr='icontains',label='Book name contains')
-
-    class Meta:
-        model = BorrowRecord
-        fields = ('status', 'book_name',)

@@ -19,3 +19,7 @@ class BookViewSet(viewsets.ModelViewSet):
     ordering_fields = ('title','copies_available',)
 
     ordering = ('title',)
+
+    def get_queryset(self):
+        return Book.objects.select_related('author', 'category').all()
+

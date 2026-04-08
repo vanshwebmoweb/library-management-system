@@ -24,7 +24,7 @@ class BorrowListView(generics.ListAPIView):
         user = self.request.user
         if user.is_staff:
             return BorrowRecord.objects.all()
-        return BorrowRecord.objects.filter(user=user)
+        return BorrowRecord.objects.for_user(user)
 
 
 class BorrowCreateView(generics.CreateAPIView):

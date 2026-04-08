@@ -22,9 +22,7 @@ class AuthorListView(generics.ListAPIView):
     ordering = ('name',)
 
     def get_queryset(self):
-        return Author.objects.annotate(
-            total_books=Count('books')
-        )
+        return Author.objects.annotate(total_books=Count('books'))
 
 
 class AuthorCreateView(generics.CreateAPIView):
@@ -39,9 +37,7 @@ class AuthorRetrieveView(generics.RetrieveAPIView):
     permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
-        return Author.objects.annotate(
-            total_books=Count('books')
-        )
+        return Author.objects.annotate(total_books=Count('books'))
 
 
 class AuthorUpdateView(generics.UpdateAPIView):
