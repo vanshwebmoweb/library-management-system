@@ -24,3 +24,6 @@ local_settings.py
 # Windows
 Thumbs.db
 Desktop.ini
+
+# Environment variables
+.env

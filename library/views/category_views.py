@@ -8,6 +8,7 @@ from library.permissions import IsAdminOrReadOnly
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from library.filters import CategoryFilter
+from library.utils import success_response, error_response
 
 
 
@@ -85,4 +86,4 @@ class CategoryDeleteAPIView(CategoryBaseAPIView):
         if category is None:
             return Response({"error": "Category not found"},status=status.HTTP_404_NOT_FOUND)
         category.delete()
-        return Response({"message": "Deleted"},status=status.HTTP_204_NO_CONTENT)
+        return success_response( None,"Category deleted successfully",status.HTTP_204_NO_CONTENT,)

@@ -5,7 +5,7 @@ from library.permissions import IsOwnerOrAdmin
 from library.filters import BorrowFilter
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
-
+from rest_framework.throttling import ScopedRateThrottle
 
 
 class BorrowListView(generics.ListAPIView):
@@ -31,6 +31,8 @@ class BorrowCreateView(generics.CreateAPIView):
     serializer_class = BorrowRecordSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = BorrowRecord.objects.all()
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'borrow'
 
     def perform_create(self, serializer):
         book = serializer.validated_data['book']
