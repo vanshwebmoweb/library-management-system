@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'library',
     'debug_toolbar',
     'django_filters',
+    'drf_spectacular',
 ]
 AUTH_USER_MODEL = 'users.User'
 APPEND_SLASH = False
@@ -162,7 +163,7 @@ REST_FRAMEWORK = {
 
     'EXCEPTION_HANDLER': 'library.exceptions.custom_exception_handler',
 
-
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 from datetime import timedelta
@@ -176,3 +177,17 @@ INTERNAL_IPS = [
     '127.0.0.1',
 ]
 
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Library Management System API',
+    'DESCRIPTION': 'A REST API for managing library books, authors, categories and borrows',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'CONTACT': {
+        'name': 'Vansh Shah',
+        'email': 'vansh@gmail.com',
+    },
+}
+
+import sys
+if 'test' in sys.argv:
+    REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = []

@@ -6,6 +6,7 @@ from library.filters import BorrowFilter
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.throttling import ScopedRateThrottle
+from drf_spectacular.utils import extend_schema
 
 
 class BorrowListView(generics.ListAPIView):

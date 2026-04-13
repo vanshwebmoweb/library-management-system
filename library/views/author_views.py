@@ -6,6 +6,7 @@ from django.db.models import Count
 from library.filters import AuthorFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from drf_spectacular.utils import extend_schema
 
 
 

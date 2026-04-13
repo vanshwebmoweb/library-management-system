@@ -12,7 +12,7 @@ class BookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Book
-        fields = ('id', 'title', 'author', 'author_name', 'category', 'category_name', 'isbn', 'published_date', 'is_available', 'days_since_published',)
+        fields = ('id', 'title', 'author', 'author_name', 'category', 'category_name', 'isbn', 'published_date', 'is_available', 'days_since_published', 'copies_available')
 
     def get_is_available(self, obj):
         if obj.copies_available > 0:
@@ -35,7 +35,7 @@ class BookSerializer(serializers.ModelSerializer):
 
         if isbn:
             if not isbn.isdigit():
-                raise serializers.ValidationErro({"isbn": "ISBN must contain numbers only."})
+                raise serializers.ValidationError({"isbn": "ISBN must contain numbers only."})
 
         if copies_available is not None:
             if copies_available < 0:

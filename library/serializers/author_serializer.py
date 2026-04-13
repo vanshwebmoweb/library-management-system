@@ -12,14 +12,16 @@ class AuthorSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'bio', 'books', 'total_books',)
 
     def validate(self, data):
-        name = data.get('name')
+        name = data.get('name', '').strip()
         bio = data.get('bio')
 
         if name:
             if any(char.isdigit() for char in name):
                 raise serializers.ValidationError({"name": "Author name cannot contain numbers."})
-            if len(name) < 1:
-                raise serializers.ValidationError({"name": "Author name must be at least 1 character."})
+            if len(name) < 2:
+                raise serializers.ValidationError({"name": "Author name must be at least 2 characters."})
+        else:
+            raise serializers.ValidationError({"name": "Author name is required and must be at least 2 characters."})
 
         if bio:
             if len(bio) < 10:
