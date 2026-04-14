@@ -4,6 +4,8 @@ from .views import (AuthorListView,AuthorCreateView,AuthorRetrieveView,AuthorUpd
                     CategoryListAPIView,CategoryCreateAPIView,CategoryRetrieveAPIView,CategoryUpdateAPIView,CategoryDeleteAPIView,
                     BookViewSet,BorrowListView,BorrowCreateView,BorrowRetrieveView,BorrowUpdateView,BorrowDestroyView)
 
+
+
 router = DefaultRouter(trailing_slash=False)
 router.register(r'books', BookViewSet,basename='book')
 

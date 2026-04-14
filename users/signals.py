@@ -1,23 +1,17 @@
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import User
+from django.contrib.auth import get_user_model
+from library.emails import send_welcome_email
 
+
+
+User = get_user_model()
 
 
 @receiver(post_save, sender=User)
 def user_created(sender, instance, created, **kwargs):
     if created:
-        print(f"New user created: {instance.username}")
-        print(f"Email: {instance.email}")
-        print(f"Membership date: {instance.membership_date}")
+        print(f"New user registered: {instance.username}")
 
-
-@receiver(post_save, sender=User)
-def user_updated(sender, instance, created, **kwargs):
-    if not created:
-        print(f"User updated: {instance.username}")
-
-
-@receiver(post_delete, sender=User)
-def user_deleted(sender, instance, **kwargs):
-    print(f"User deleted: {instance.username}")
+        send_welcome_email(instance)
+        print(f"Welcome email sent to {instance.email}")
