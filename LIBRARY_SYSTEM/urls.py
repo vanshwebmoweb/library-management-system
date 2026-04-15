@@ -22,7 +22,7 @@ import debug_toolbar
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/',include('users.urls')),
-    path('api/',include('library.urls')),
+    path('api/', include('library.urls')),
     path('__debug__/', include('debug_toolbar.urls')),
 
 

@@ -171,6 +171,7 @@ REST_FRAMEWORK = {
 
     'DEFAULT_CONTENT_NEGOTIATION_CLASS':
         'rest_framework.negotiation.DefaultContentNegotiation',
+
 }
 
 from datetime import timedelta

@@ -47,4 +47,3 @@ class BookViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Book.objects.select_related('author', 'category').all()
-
