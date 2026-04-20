@@ -1,12 +1,15 @@
-from rest_framework import generics, permissions
+
 from library.models import BorrowRecord
 from library.serializers import BorrowRecordSerializer
 from library.permissions import IsOwnerOrAdmin
 from library.filters import BorrowFilter
+
 from rest_framework.filters import SearchFilter, OrderingFilter
-from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics, permissions
 from rest_framework.throttling import ScopedRateThrottle
+
 from drf_spectacular.utils import extend_schema
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class BorrowListView(generics.ListAPIView):
@@ -16,10 +19,7 @@ class BorrowListView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = BorrowFilter
     search_fields = ('book__title', 'status',)
-
-    ordering_fields = ('borrowed_date','return_date','status',)
-
-    ordering = ('-borrowed_date',)
+    ordering_fields = ('borrowed_date', 'return_date', 'status',)
 
     def get_queryset(self):
         user = self.request.user

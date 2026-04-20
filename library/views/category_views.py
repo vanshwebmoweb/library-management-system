@@ -2,13 +2,15 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.filters import SearchFilter, OrderingFilter
+
 from library.models import Category
 from library.serializers import CategorySerializer
 from library.permissions import IsAdminOrReadOnly
-from rest_framework.filters import SearchFilter, OrderingFilter
-from django_filters.rest_framework import DjangoFilterBackend
 from library.filters import CategoryFilter
 from library.utils import success_response, error_response
+
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 
@@ -26,7 +28,7 @@ class CategoryListAPIView(CategoryBaseAPIView):
     filterset_class = CategoryFilter
     search_fields = ('name',)
     ordering_fields = ('name', 'id',)
-    ordering = ('name',)
+
 
     def get(self, request):
         categories = Category.objects.all()

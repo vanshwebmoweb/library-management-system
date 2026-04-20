@@ -1,12 +1,14 @@
-from rest_framework import generics
 from library.models import Author
 from library.serializers import AuthorSerializer
 from library.permissions import IsAdminOrReadOnly
-from django.db.models import Count
 from library.filters import AuthorFilter
+
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter, OrderingFilter
 from drf_spectacular.utils import extend_schema
+from django.db.models import Count
+
+from rest_framework import generics
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 
 
@@ -16,11 +18,8 @@ class AuthorListView(generics.ListAPIView):
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = AuthorFilter
-    search_fields = ('name','bio',)
-
-    ordering_fields = ('name','id',)
-
-    ordering = ('name',)
+    search_fields = ('name', 'bio',)
+    ordering_fields = ('name', 'id',)
 
     def get_queryset(self):
         return Author.objects.annotate(total_books=Count('books'))

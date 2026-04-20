@@ -12,8 +12,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
         if name:
             if name.isdigit():
-                raise serializers.ValidationError({"name": "Category name cannot be numbers only."})
+                raise serializers.ValidationError({"name_contain_characters": "Category name cannot be numbers only."})
             if len(name) < 3:
-                raise serializers.ValidationError({"name": "Category name must be at least 3 characters."})
+                raise serializers.ValidationError({"name_length": "Category name must be at least 3 characters."})
 
         return data
