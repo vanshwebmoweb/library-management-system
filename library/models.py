@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
-from library.managers import BookManager, BorrowRecordManager
+
+from library.managers.book_manager import BookManager
+from library.managers.borrow_manager import BorrowRecordManager
 
 
 
@@ -12,13 +14,11 @@ class Author(models.Model):
         return self.name
 
 
-
 class Category(models.Model):
     name = models.CharField(max_length=100,unique=True)
 
     def __str__(self):
         return self.name
-
 
 
 class Book(models.Model):
@@ -33,7 +33,6 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
-
 
 
 class BorrowRecord(models.Model):

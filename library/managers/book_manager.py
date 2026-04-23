@@ -3,7 +3,6 @@ from django.db import models
 
 
 class BookQuerySet(models.QuerySet):
-
     def available(self):
         return self.filter(copies_available__gt=0)
 
@@ -21,7 +20,6 @@ class BookQuerySet(models.QuerySet):
 
 
 class BookManager(models.Manager):
-
     def get_queryset(self):
         return BookQuerySet(self.model, using=self._db)
 

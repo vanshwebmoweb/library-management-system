@@ -5,9 +5,9 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from library.models import Category
-from library.serializers import CategorySerializer
+from library.serializers.category_serializer import CategorySerializer
 from library.permissions import IsAdminOrReadOnly
-from library.filters import CategoryFilter
+from library.filters.category_filter import CategoryFilter
 from library.utils import success_response, error_response
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -64,7 +64,7 @@ class CategoryRetrieveAPIView(CategoryBaseAPIView):
         category = self.get_object(pk)
         if category is None:
             return Response(
-                {"error": "Category not found"},status=status.HTTP_404_NOT_FOUND)
+                {"error": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = CategorySerializer(category)
         return Response(serializer.data)
 
@@ -74,7 +74,7 @@ class CategoryUpdateAPIView(CategoryBaseAPIView):
         category = self.get_object(pk)
         if category is None:
             return Response(
-                {"error": "Category not found"},status=status.HTTP_404_NOT_FOUND)
+                {"error": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = CategorySerializer(category, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -86,6 +86,6 @@ class CategoryDeleteAPIView(CategoryBaseAPIView):
     def delete(self, request, pk):
         category = self.get_object(pk)
         if category is None:
-            return Response({"error": "Category not found"},status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
         category.delete()
-        return success_response( None,"Category deleted successfully",status.HTTP_204_NO_CONTENT,)
+        return success_response( None, {"deleted": "Category deleted successfully"}, status.HTTP_204_NO_CONTENT,)

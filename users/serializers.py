@@ -14,7 +14,6 @@ class RegisterSerializer(serializers.ModelSerializer):
          return User.objects.create_user(**validated_data)
 
 
-
 class UserSerializer(serializers.ModelSerializer):
         class Meta:
             model = User

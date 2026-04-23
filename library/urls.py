@@ -1,9 +1,10 @@
 from django.urls import path , include
 from rest_framework.routers import DefaultRouter
-from .views import (AuthorListView,AuthorCreateView,AuthorRetrieveView,AuthorUpdateView,AuthorDestroyView,
-                    CategoryListAPIView,CategoryCreateAPIView,CategoryRetrieveAPIView,CategoryUpdateAPIView,CategoryDeleteAPIView,
-                    BookViewSet,BorrowListView,BorrowCreateView,BorrowRetrieveView,BorrowUpdateView,BorrowDestroyView)
 
+from library.views.author_views import (AuthorListView, AuthorCreateView, AuthorRetrieveView, AuthorUpdateView, AuthorDestroyView,)
+from library.views.category_views import (CategoryListAPIView, CategoryCreateAPIView, CategoryRetrieveAPIView, CategoryUpdateAPIView, CategoryDeleteAPIView,)
+from library.views.book_views import BookViewSet
+from library.views.borrow_views import (BorrowListView, BorrowCreateView, BorrowRetrieveView, BorrowUpdateView, BorrowDestroyView, BorrowBulkCreateView,)
 
 
 router = DefaultRouter(trailing_slash=False)
@@ -29,5 +30,6 @@ urlpatterns=[
     path('borrows/<int:pk>', BorrowRetrieveView.as_view(), name='borrow_detail'),
     path('borrows/<int:pk>/update', BorrowUpdateView.as_view(), name='borrow_update'),
     path('borrows/<int:pk>/delete', BorrowDestroyView.as_view(), name='borrow_delete'),
+    path('borrows/bulk-create', BorrowBulkCreateView.as_view(), name='borrow-bulk-create'),
 
 ]

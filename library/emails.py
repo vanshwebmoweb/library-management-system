@@ -2,6 +2,16 @@ from django.core.mail import send_mail
 from django.conf import settings
 
 
+def send_email(subject, message, recipient_email):
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[recipient_email],
+        fail_silently=False,
+    )
+
+
 def send_welcome_email(user):
     subject = 'Welcome to Library Management System'
     message = f'''
@@ -23,13 +33,7 @@ You can now:
 Happy Reading!
 Library Management System
     '''
-    send_mail(
-        subject=subject,
-        message=message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        fail_silently=False,
-    )
+    send_email(subject, message, user.email)
 
 
 def send_borrow_confirmation_email(borrow_record):
@@ -48,13 +52,7 @@ Please return the book on time.
 Happy Reading!
 Library Management System
     '''
-    send_mail(
-        subject=subject,
-        message=message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[borrow_record.user.email],
-        fail_silently=False,
-    )
+    send_email(subject, message, borrow_record.user.email)
 
 
 def send_return_confirmation_email(borrow_record):
@@ -73,10 +71,4 @@ Thank you for returning the book on time!
 
 Library Management System
     '''
-    send_mail(
-        subject=subject,
-        message=message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[borrow_record.user.email],
-        fail_silently=False,
-    )
+    send_email(subject, message, borrow_record.user.email)

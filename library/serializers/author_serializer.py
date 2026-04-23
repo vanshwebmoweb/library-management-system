@@ -4,13 +4,13 @@ from library.models import Author
 
 
 class AuthorSerializer(serializers.ModelSerializer):
-    books = serializers.StringRelatedField(many=True)
     total_books = serializers.IntegerField()
+    total_copies = serializers.IntegerField()
 
     class Meta:
         model = Author
-        fields = ('id', 'name', 'bio', 'books', 'total_books',)
-        read_only_fields = ('id', 'books', 'total_books',)
+        fields = ('id', 'name', 'bio', 'total_books', 'total_copies',)
+        read_only_fields = ('id', 'total_books', 'total_copies',)
 
     def validate(self, data):
         name = data.get('name', '').strip()

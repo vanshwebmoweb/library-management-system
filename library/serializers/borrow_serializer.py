@@ -5,13 +5,10 @@ from library.models import BorrowRecord
 
 
 class BorrowRecordSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField()
-    book_name = serializers.CharField(source='book.title')
-
     class Meta:
         model = BorrowRecord
-        fields = ('id', 'user', 'book', 'book_name', 'borrowed_date', 'return_date', 'status',)
-        read_only_fields = ('id', 'user', 'book_name', 'borrowed_date',)
+        fields = ('id', 'user', 'book', 'borrowed_date', 'return_date', 'status',)
+        read_only_fields = ('id', 'user', 'borrowed_date',)
 
     def validate(self, data):
         book = data.get('book')

@@ -13,7 +13,6 @@ def custom_exception_handler(exc, context):
         view = context.get('view', None)
         view_name = view.__class__.__name__ if view else None
 
-
         custom_response = {
             'status': 'error',
             'code': status_code,

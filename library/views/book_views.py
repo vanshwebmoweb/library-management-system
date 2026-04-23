@@ -1,12 +1,14 @@
 from library.models import Book
-from library.serializers import BookSerializer
+from library.serializers.book_serializer import BookSerializer
 from library.permissions import IsAdminOrReadOnly
-from library.filters import BookFilter
+from library.filters.book_filter import BookFilter
 
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework import viewsets
+from rest_framework.response import Response
 
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Case, When, Value, CharField
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
@@ -45,4 +47,11 @@ class BookViewSet(viewsets.ModelViewSet):
     ordering_fields = ('title', 'copies_available',)
 
     def get_queryset(self):
-        return Book.objects.select_related('author', 'category').all()
+        return Book.objects.select_related('author', 'category').annotate(
+            is_available=Case(
+                When(copies_available__gt=0, then=Value('Yes')),
+                default=Value('No'),
+                output_field=CharField(),
+            )).all()
+
+

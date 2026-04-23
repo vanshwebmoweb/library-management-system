@@ -1,9 +1,7 @@
 from django.db import models
 
 
-
 class BorrowRecordQuerySet(models.QuerySet):
-
     def borrowed(self):
         return self.filter(status='borrowed',)
 
@@ -18,7 +16,6 @@ class BorrowRecordQuerySet(models.QuerySet):
 
 
 class BorrowRecordManager(models.Manager):
-
     def get_queryset(self):
         return BorrowRecordQuerySet(self.model, using=self._db)
 
