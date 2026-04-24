@@ -57,7 +57,20 @@ class AuthorRetrieveView(generics.RetrieveAPIView):
     permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
-        return Author.objects.annotate(total_books=Count('books'))
+        return Author.objects.annotate(
+            total_books=Count('books'),
+            total_copies=Sum('books__copies_available'),
+            )
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = dict(serializer.data)
+        data['books'] = list(
+            instance.books.values_list('title', flat=True)
+        )
+        data['total_copies'] = instance.total_copies
+        return Response(data)
 
 
 class AuthorUpdateView(generics.UpdateAPIView):
