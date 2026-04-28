@@ -2,6 +2,7 @@ from library.models import Book, BorrowRecord
 from library.serializers.book_serializer import BookSerializer
 from library.permissions import IsAdminOrReadOnly
 from library.filters.book_filter import BookFilter
+from library.exports import generate_books_pdf, generate_books_excel
 
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework import viewsets
@@ -12,6 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Case, When, Value, CharField
 from django.db.models import Subquery, OuterRef
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from django.http import HttpResponse
 
 
 
@@ -79,5 +81,35 @@ class BookViewSet(viewsets.ModelViewSet):
             book['is_available'] = 'Yes' if book['copies_available'] > 0 else 'No'
 
         return Response({'total_books': len(books_data),'books': books_data,})
+
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='export/pdf',
+        permission_classes=[IsAdminOrReadOnly],
+    )
+    def export_pdf(self, request):
+        books = Book.objects.select_related('author', 'category').all()
+
+        buffer = generate_books_pdf(books)
+
+        response = HttpResponse(buffer, content_type='application/pdf',)
+        response['Content-Disposition'] = 'attachment; filename="books_report.pdf"'
+        return response
+
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='export/excel',
+        permission_classes=[IsAdminOrReadOnly],
+    )
+    def export_excel(self, request):
+        books = Book.objects.select_related('author', 'category').all()
+
+        buffer = generate_books_excel(books)
+
+        response = HttpResponse(buffer, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',)
+        response['Content-Disposition'] = 'attachment; filename="books_report.xlsx"'
+        return response
 
 
