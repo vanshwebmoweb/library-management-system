@@ -1,5 +1,5 @@
 from library.models import Book, BorrowRecord
-from library.serializers.book_serializer import BookSerializer
+from library.serializers.book_serializer import (BookListSerializer, BookCreateSerializer, BookRetrieveSerializer, BookUpdateSerializer, BookDestroySerializer,)
 from library.permissions import IsAdminOrReadOnly
 from library.filters.book_filter import BookFilter
 from library.exports import generate_books_pdf, generate_books_excel
@@ -18,40 +18,37 @@ from django.http import HttpResponse
 
 
 @extend_schema_view(
-    list=extend_schema(
-        summary='List all books',
-        description='Returns a paginated list of all books. Supports filtering, searching and ordering.',
-    ),
-    create=extend_schema(
-        summary='Create a book',
-        description='Create a new book. Admin only.',
-    ),
-    retrieve=extend_schema(
-        summary='Get a book',
-        description='Returns details of a specific book.',
-    ),
-    update=extend_schema(
-        summary='Update a book',
-        description='Update a specific book. Admin only.',
-    ),
-    destroy=extend_schema(
-        summary='Delete a book',
-        description='Delete a specific book. Admin only.',
-    ),
+    list=extend_schema(summary='List all books', description='Returns a paginated list of all books. Supports filtering, searching and ordering.',),
+    create=extend_schema(summary='Create a book', description='Create a new book. Admin only.',),
+    retrieve=extend_schema(summary='Get a book', description='Returns details of a specific book.',),
+    update=extend_schema(summary='Update a book', description='Update a specific book. Admin only.',),
+    destroy=extend_schema(summary='Delete a book', description='Delete a specific book. Admin only.',),
 )
 
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.select_related('author', 'category').all()
-    serializer_class = BookSerializer
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = BookFilter
     search_fields = ('title', 'author__name', 'category__name','isbn',)
     ordering_fields = ('title', 'copies_available',)
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return BookListSerializer
+        elif self.action == 'create':
+            return BookCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return BookUpdateSerializer
+        elif self.action == 'retrieve':
+            return BookRetrieveSerializer
+        elif self.action == 'destroy':
+            return BookDestroySerializer
+        return BookListSerializer
+
     def get_queryset(self):
-        last_borrow_date = BorrowRecord.objects.filter(
+        last_borrow_user_name = BorrowRecord.objects.filter(
             book=OuterRef('pk'),
         ).order_by('-borrowed_date').values('borrowed_date')[:1]
 
@@ -69,7 +66,7 @@ class BookViewSet(viewsets.ModelViewSet):
             default=Value('Unknown'),
             output_field=CharField(),
         ),
-            last_borrowed=Subquery(last_borrow_date),
+            last_borrowed_user=Subquery(last_borrow_user_name),
             ).all()
 
 

@@ -1,6 +1,6 @@
 
 from library.models import BorrowRecord
-from library.serializers.borrow_serializer import BorrowRecordSerializer
+from library.serializers.borrow_serializer import (BorrowListSerializer, BorrowCreateSerializer, BorrowRetrieveSerializer, BorrowUpdateSerializer, BorrowDestroySerializer,)
 from library.permissions import IsOwnerOrAdmin
 from library.filters.borrow_filter import BorrowFilter
 
@@ -15,7 +15,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 
 class BorrowListView(generics.ListAPIView):
-    serializer_class = BorrowRecordSerializer
+    serializer_class = BorrowListSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = BorrowRecord.objects.none()
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -26,33 +26,19 @@ class BorrowListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.is_staff:
+            filter_param = self.request.query_params.get('filter')
+            if filter_param == 'borrowed':
+                return BorrowRecord.objects.borrowed()
+            elif filter_param == 'returned':
+                return BorrowRecord.objects.returned()
+            elif filter_param == 'active':
+                return BorrowRecord.objects.active_borrows()
             return BorrowRecord.objects.all()
         return BorrowRecord.objects.for_user(user)
 
-    def add_extra_fields(self, data, queryset):
-        queryset_list = list(queryset)
-        for i, item in enumerate(data):
-            borrow = queryset_list[i]
-            item['user_name'] = str(borrow.user)
-            item['book_name'] = borrow.book.title
-        return data
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            data = self.add_extra_fields(list(serializer.data), page)
-            return self.get_paginated_response(data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        data = self.add_extra_fields(list(serializer.data), queryset)
-        return Response(data)
-
 
 class BorrowCreateView(generics.CreateAPIView):
-    serializer_class = BorrowRecordSerializer
+    serializer_class = BorrowCreateSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = BorrowRecord.objects.all()
     throttle_classes = [ScopedRateThrottle]
@@ -66,22 +52,14 @@ class BorrowCreateView(generics.CreateAPIView):
 
 
 class BorrowRetrieveView(generics.RetrieveAPIView):
-    queryset = BorrowRecord.objects.all()
-    serializer_class = BorrowRecordSerializer
+    queryset = BorrowRecord.objects.select_related('user','book').all()
+    serializer_class = BorrowRetrieveSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        data = dict(serializer.data)
-        data['user_name'] = str(instance.user)
-        data['book_name'] = instance.book.title
-        return Response(data)
 
 
 class BorrowUpdateView(generics.UpdateAPIView):
     queryset = BorrowRecord.objects.all()
-    serializer_class = BorrowRecordSerializer
+    serializer_class = BorrowUpdateSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
     def perform_update(self, serializer):
@@ -96,7 +74,7 @@ class BorrowUpdateView(generics.UpdateAPIView):
 
 class BorrowDestroyView(generics.DestroyAPIView):
     queryset = BorrowRecord.objects.all()
-    serializer_class = BorrowRecordSerializer
+    serializer_class = BorrowDestroySerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
 
@@ -113,7 +91,7 @@ class BorrowBulkCreateView(APIView):
             return Response({"error": "List cannot be empty."}, status=status.HTTP_400_BAD_REQUEST,)
 
 
-        serializer = BorrowRecordSerializer(data=data, many=True,)
+        serializer = BorrowCreateSerializer(data=data, many=True,)
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST,)
@@ -125,11 +103,7 @@ class BorrowBulkCreateView(APIView):
 
 
         borrow_records = [
-            BorrowRecord(
-                user=request.user,
-                book=item['book'],
-                status='borrowed',
-            )
+            BorrowRecord(user=request.user, book=item['book'], status='borrowed',)
             for item in serializer.validated_data
         ]
 
