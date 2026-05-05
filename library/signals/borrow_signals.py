@@ -25,9 +25,6 @@ def borrow_updated(sender, instance, created, **kwargs):
             print(f"Book returned!")
             print(f"User: {instance.user}")
             print(f"Book: {instance.book.title}")
-            instance.book.copies_available += 1
-            instance.book.save()
-            print(f"Copies now: {instance.book.copies_available}")
 
             send_return_confirmation_email(instance)
             print(f"Return confirmation email sent to {instance.user.email}")

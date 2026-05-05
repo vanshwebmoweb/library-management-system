@@ -165,12 +165,10 @@ REST_FRAMEWORK = {
 
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 
-    'DEFAULT_METADATA_CLASS': 'rest_framework.metadata.SimpleMetadata',
-
     'DEFAULT_METADATA_CLASS': 'library.metadata.CustomMetadata',
 
     'DEFAULT_CONTENT_NEGOTIATION_CLASS':
-        'rest_framework.negotiation.DefaultContentNegotiation',
+        'library.negotiation.CustomContentNegotiation',
 
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
@@ -212,14 +210,6 @@ import sys
 if 'test' in sys.argv:
     REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = []
 
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
 from decouple import config
 

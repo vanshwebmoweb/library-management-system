@@ -9,9 +9,13 @@ from rest_framework import generics, permissions, status
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import serializers
 
-from drf_spectacular.utils import extend_schema
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db import transaction
+from django.db.models import F
+from django.utils import timezone
+
 
 
 class BorrowListView(generics.ListAPIView):
@@ -25,16 +29,19 @@ class BorrowListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        queryset = BorrowRecord.objects.select_related('user', 'book')
+
         if user.is_staff:
             filter_param = self.request.query_params.get('filter')
             if filter_param == 'borrowed':
-                return BorrowRecord.objects.borrowed()
+                return queryset.borrowed()
             elif filter_param == 'returned':
-                return BorrowRecord.objects.returned()
+                return queryset.returned()
             elif filter_param == 'active':
-                return BorrowRecord.objects.active_borrows()
-            return BorrowRecord.objects.all()
-        return BorrowRecord.objects.for_user(user)
+                return queryset.active_borrows()
+            return queryset
+        return queryset.for_user(user)
+
 
 
 class BorrowCreateView(generics.CreateAPIView):
@@ -45,10 +52,13 @@ class BorrowCreateView(generics.CreateAPIView):
     throttle_scope = 'borrow'
 
     def perform_create(self, serializer):
-        book = serializer.validated_data['book']
-        book.copies_available -= 1
-        book.save()
-        serializer.save(user=self.request.user)
+        with transaction.atomic():
+            book = serializer.validated_data['book']
+
+            book.__class__.objects.filter(id=book.id).update(
+            copies_available=F('copies_available') - 1
+            )
+            serializer.save(user=self.request.user)
 
 
 class BorrowRetrieveView(generics.RetrieveAPIView):
@@ -58,18 +68,23 @@ class BorrowRetrieveView(generics.RetrieveAPIView):
 
 
 class BorrowUpdateView(generics.UpdateAPIView):
-    queryset = BorrowRecord.objects.all()
+    queryset = BorrowRecord.objects.select_related('book')
     serializer_class = BorrowUpdateSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
     def perform_update(self, serializer):
-        old_status = self.get_object().status
-        instance = serializer.save()
+        with transaction.atomic():
+            instance = self.get_object()
+            old_status = instance.status
+            instance = serializer.save()
 
-        if old_status == 'borrowed' and instance.status == 'returned':
-            instance.book.copies_available += 1
-            instance.book.save()
-            print(f"Copies increased to: {instance.book.copies_available}")
+            if old_status == 'borrowed' and instance.status == 'returned':
+                instance.book.__class__.objects.filter(id=instance.book.id).update(
+                copies_available=F('copies_available') + 1
+                )
+
+                instance.return_date = timezone.now().date()
+                instance.save()
 
 
 class BorrowDestroyView(generics.DestroyAPIView):
@@ -90,30 +105,29 @@ class BorrowBulkCreateView(APIView):
         if len(data) == 0:
             return Response({"error": "List cannot be empty."}, status=status.HTTP_400_BAD_REQUEST,)
 
+        with transaction.atomic():
+            serializer = BorrowCreateSerializer(data=data, many=True)
+            serializer.is_valid(raise_exception=True)
 
-        serializer = BorrowCreateSerializer(data=data, many=True,)
+            books = [item['book'] for item in serializer.validated_data]
 
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST,)
+            if len(books) != len(set(books)):
+                raise serializers.ValidationError({"duplicate_books": "Duplicate books in request"})
 
-        for item in serializer.validated_data:
-            book = item['book']
-            if book.copies_available < 1:
-                return Response({"book_not_available": f"No copies available for {book.title}."}, status=status.HTTP_400_BAD_REQUEST,)
+            for book in books:
+                if book.copies_available < 1:
+                    raise serializers.ValidationError({"book_not_available": f"No copies available for {book.title}."})
 
+            borrow_records = [
+                BorrowRecord(user=request.user, book=book, status='borrowed')
+                for book in books
+            ]
 
-        borrow_records = [
-            BorrowRecord(user=request.user, book=item['book'], status='borrowed',)
-            for item in serializer.validated_data
-        ]
+            for book in books:
+                book.__class__.objects.filter(id=book.id).update(
+                copies_available=F('copies_available') - 1
+                )
 
-
-        for item in serializer.validated_data:
-            book = item['book']
-            book.copies_available -= 1
-            book.save()
-
-
-        BorrowRecord.objects.bulk_create(borrow_records)
+            BorrowRecord.objects.bulk_create(borrow_records)
 
         return Response({"message": f"{len(borrow_records)} books borrowed successfully."}, status=status.HTTP_201_CREATED,)

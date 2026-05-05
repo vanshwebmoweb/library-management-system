@@ -9,11 +9,12 @@ class BookListSerializer(serializers.ModelSerializer):
     is_available = serializers.CharField()
     availability_status = serializers.CharField()
     last_borrowed_user = serializers.CharField()
+    last_borrowed_date = serializers.DateField()
 
     class Meta:
         model = Book
-        fields = ('id', 'title', 'author', 'author_name', 'category', 'category_name', 'isbn', 'published_date', 'copies_available', 'is_available', 'availability_status', 'last_borrowed_user',)
-        read_only_fields = ('id', 'author_name', 'category_name', 'is_available', 'availability_status', 'last_borrowed_user',)
+        fields = ('id', 'title', 'author', 'author_name', 'category', 'category_name', 'isbn', 'published_date', 'copies_available', 'is_available', 'availability_status', 'last_borrowed_user', 'last_borrowed_date',)
+        read_only_fields = ('id', 'author_name', 'category_name', 'is_available', 'availability_status', 'last_borrowed_user', 'last_borrowed_date',)
 
 
 class BookCreateSerializer(serializers.ModelSerializer):
@@ -82,11 +83,12 @@ class BookRetrieveSerializer(serializers.ModelSerializer):
     is_available = serializers.CharField()
     availability_status = serializers.CharField()
     last_borrowed_user = serializers.CharField()
+    last_borrowed_date = serializers.DateField()
 
     class Meta:
         model = Book
-        fields = ('id', 'title', 'author', 'author_name', 'category', 'category_name', 'isbn', 'published_date', 'copies_available', 'is_available', 'availability_status', 'last_borrowed_user',)
-        read_only_fields = ('id', 'author_name', 'category_name', 'is_available', 'availability_status', 'last_borrowed_user',)
+        fields = ('id', 'title', 'author', 'author_name', 'category', 'category_name', 'isbn', 'published_date', 'copies_available', 'is_available', 'availability_status', 'last_borrowed_user', 'last_borrowed_date',)
+        read_only_fields = ('id', 'author_name', 'category_name', 'is_available', 'availability_status', 'last_borrowed_user', 'last_borrowed_date',)
 
 
 class BookDestroySerializer(serializers.ModelSerializer):

@@ -20,9 +20,14 @@ class BorrowCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         book = data.get('book')
+        user = self.context['request'].user
+
         if book:
             if book.copies_available < 1:
                 raise serializers.ValidationError({"book_not_available": "No copies available."})
+            if BorrowRecord.objects.filter(user=user, book=book, status='borrowed').exists():
+                raise serializers.ValidationError({"already_borrowed": "You already borrowed this book."})
+
         return data
 
 

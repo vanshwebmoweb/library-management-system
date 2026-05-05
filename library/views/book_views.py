@@ -12,8 +12,8 @@ from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Case, When, Value, CharField
 from django.db.models import Subquery, OuterRef
-from drf_spectacular.utils import extend_schema, extend_schema_view
 from django.http import HttpResponse
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
 
@@ -48,17 +48,32 @@ class BookViewSet(viewsets.ModelViewSet):
         return BookListSerializer
 
     def get_queryset(self):
-        last_borrow_user_name = BorrowRecord.objects.filter(
-            book=OuterRef('pk'),
-        ).order_by('-borrowed_date').values('borrowed_date')[:1]
+        queryset = Book.objects.all()
 
-        return Book.objects.select_related('author', 'category').annotate(
-            is_available=Case(
-                When(copies_available__gt=0, then=Value('Yes')),
-                default=Value('No'),
-                output_field=CharField(),
-            ),
-            availability_status=Case(
+        filter_type = self.request.query_params.get('type')
+
+        if filter_type == 'available':
+            queryset = queryset.available()
+        elif filter_type == 'unavailable':
+            queryset = queryset.unavailable()
+        elif filter_type == 'recent':
+            queryset = queryset.recent()
+
+        last_borrow_user = BorrowRecord.objects.filter(
+            book=OuterRef('pk')
+            ).order_by('-borrowed_date').values('user__username')[:1]
+
+        last_borrow_date = BorrowRecord.objects.filter(
+            book=OuterRef('pk')
+            ).order_by('-borrowed_date').values('borrowed_date')[:1]
+
+        return queryset.select_related('author', 'category').annotate(
+        is_available=Case(
+            When(copies_available__gt=0, then=Value('Yes')),
+            default=Value('No'),
+            output_field=CharField(),
+        ),
+        availability_status=Case(
             When(copies_available=0, then=Value('Out of Stock')),
             When(copies_available__lte=2, then=Value('Low Stock')),
             When(copies_available__lte=5, then=Value('Available')),
@@ -66,8 +81,9 @@ class BookViewSet(viewsets.ModelViewSet):
             default=Value('Unknown'),
             output_field=CharField(),
         ),
-            last_borrowed_user=Subquery(last_borrow_user_name),
-            ).all()
+        last_borrowed_user=Subquery(last_borrow_user),
+        last_borrowed_date=Subquery(last_borrow_date),
+    )
 
 
     @action(detail=False, methods=['get'], url_path='stats')
