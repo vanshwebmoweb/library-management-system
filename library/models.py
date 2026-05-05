@@ -1,6 +1,9 @@
 from django.db import models
 from django.conf import settings
 
+from library.managers.book_manager import BookManager
+from library.managers.borrow_manager import BorrowRecordManager
+
 
 
 class Author(models.Model):
@@ -10,11 +13,13 @@ class Author(models.Model):
     def __str__(self):
         return self.name
 
+
 class Category(models.Model):
     name = models.CharField(max_length=100,unique=True)
 
     def __str__(self):
         return self.name
+
 
 class Book(models.Model):
     title = models.CharField(max_length=200)
@@ -24,8 +29,11 @@ class Book(models.Model):
     published_date = models.DateField()
     copies_available = models.PositiveBigIntegerField(default=1)
 
+    objects = BookManager()
+
     def __str__(self):
         return self.title
+
 
 class BorrowRecord(models.Model):
     STATUS_CHOICES = (
@@ -37,6 +45,8 @@ class BorrowRecord(models.Model):
     borrowed_date = models.DateField(auto_now_add=True)
     return_date = models.DateField(null=True,blank=True)
     status = models.CharField(max_length=10,choices=STATUS_CHOICES,default='borrowed')
+
+    objects = BorrowRecordManager()
 
     def __str__(self):
         return f"{self.user} borrowed {self.book}"
